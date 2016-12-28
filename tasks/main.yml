@@ -1,0 +1,26 @@
+- name: Install MySQL
+  apt: name={{ item }}
+  with_items:
+    - "{{ mysql_server_package_debian }}"
+    - "{{ mysql_client_package_debian }}"
+    - python-mysqldb
+  when: ansible_pkg_mgr == "apt"
+
+- name: Fetch root password
+  mysql_password_ini: path=/root/.my.cnf user=root
+  register: mysql_data
+
+- name: Update root user
+  mysql_user: host=localhost user={{ mysql_data.user }} password={{ mysql_data.password }} check_implicit_admin=yes update_password=always
+
+- name: Update root user for all hosts
+  mysql_user: host_all=yes user={{ mysql_data.user }} password={{ mysql_data.password }} update_password=always
+
+- name: Write mysql credentials
+  ini_file: dest=/root/.my.cnf section=client option={{ item.option }} value={{ item.value }} create=yes
+  with_items:
+    - option: user
+      value: "{{ mysql_data.user }}"
+    - option: password
+      value: "{{ mysql_data.password }}"
+

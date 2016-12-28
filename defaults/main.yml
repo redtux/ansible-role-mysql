@@ -1,0 +1,2 @@
+mysql_server_package_debian: mysql-server
+mysql_client_package_debian: mysql-client
