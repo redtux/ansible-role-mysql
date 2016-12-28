@@ -1,3 +1,6 @@
+- name: Fact | MySQL etc dir
+  set_fact: mysql_etc_d=/etc/mysql/conf.d
+
 - name: Install MySQL
   apt: name={{ item }}
   with_items:
@@ -23,4 +26,7 @@
       value: "{{ mysql_data.user }}"
     - option: password
       value: "{{ mysql_data.password }}"
+
+- name: mysql configuration
+  template: src=optimization.cnf.j2 dest={{ mysql_etc_d }}/zz_00_optimization.cnf
 

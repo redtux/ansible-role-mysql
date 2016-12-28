@@ -1,0 +1,39 @@
+[mysqld]
+
+innodb_buffer_pool_size = 1G
+innodb_buffer_pool_instances = 1
+
+
+# Redo log file size, the higher the better.
+# MySQL writes two of these log files in a default installation.
+innodb_log_file_size = 512M
+
+innodb_sort_buffer_size = 64M
+sort_buffer_size = 262144 # default
+join_buffer_size = 262144 # default
+
+max_allowed_packet = 128M
+max_heap_table_size = 16M
+query_cache_min_res_unit = 4096
+query_cache_type = 1
+query_cache_limit = 5M
+query_cache_size = 80M
+
+tmp_table_size = 32M
+max_connections = 200
+innodb_file_per_table = 1
+
+# disable this if you have only one to two CPU cores ( = 0), change it to 4 for a Quad Core.
+innodb_thread_concurrency = 0
+
+# disable this if you have slow harddisks ( = 0)
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method = O_DIRECT
+
+innodb_lru_scan_depth = 2048
+table_definition_cache = 1024
+table_open_cache = 2048
+#table_open_cache_instances = 4 # Only if your have MySQL 5.6 or higher, do not use with MariaDB!
+
+sql-mode = ""
+
