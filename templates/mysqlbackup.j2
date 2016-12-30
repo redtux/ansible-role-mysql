@@ -1,0 +1,16 @@
+#!/bin/bash
+
+BACKUPDIR="{{ mysql_backup_directory }}"
+BACKUPDATE="$(date +%F_+%T)"
+OUTPUTDIR="$BACKUPDIR/$BACKUPDATE"
+DELETEAFTER="{{ mysql_backup_delete_after }}"
+
+
+mkdir -p "$OUTPUTDIR"
+
+while read database; do
+	mysqldump "$database" | pbzip2 -zc > "$OUTPUTDIR/${database}.sql.bz2"
+done< <(mysql -N -e "SELECT DISTINCT TABLE_SCHEMA FROM TABLES WHERE TABLE_SCHEMA NOT IN ('performance_schema', 'information_schema')" information_schema)
+
+find "$BACKUPDIR" -mindepth 1 -maxdepth 1 -type d -mtime "+$DELETEAFTER" -exec rm -r {} \;
+

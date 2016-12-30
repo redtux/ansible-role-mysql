@@ -16,9 +16,6 @@
 - name: Update root user
   mysql_user: host=localhost user={{ mysql_data.user }} password={{ mysql_data.password }} check_implicit_admin=yes update_password=always
 
-- name: Update root user for all hosts
-  mysql_user: host_all=yes user={{ mysql_data.user }} password={{ mysql_data.password }} update_password=always
-
 - name: Write mysql credentials
   ini_file: dest=/root/.my.cnf section=client option={{ item.option }} value={{ item.value }} create=yes
   with_items:
@@ -27,6 +24,21 @@
     - option: password
       value: "{{ mysql_data.password }}"
 
+- name: Update root user for all hosts
+  mysql_user: host_all=yes user={{ mysql_data.user }} password={{ mysql_data.password }} update_password=always
+
 - name: mysql configuration
   template: src=optimization.cnf.j2 dest={{ mysql_etc_d }}/zz_00_optimization.cnf
+
+- name: Backup script
+  template: src=mysqlbackup.j2 dest=/usr/local/bin/mysqlbackup owner=root group=root mode=0755
+
+- name: Backup cronjob
+  cron:
+    name: mysql backup
+    cron_file: mysql_backup
+    user: root
+    job: /usr/local/bin/mysqlbackup
+    minute: "{{ mysql_backup_minute }}"
+    hour: "{{ mysql_backup_hour }}"
 
