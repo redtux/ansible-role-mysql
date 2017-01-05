@@ -1,6 +1,13 @@
 - name: Fact | MySQL etc dir
   set_fact: mysql_etc_d=/etc/mysql/conf.d
 
+- name: Create configuration directory
+  file: path={{ mysql_etc_d }} state=directory owner=root group=root mode=755
+
+# It is important to set innodb_log_file_size in the configuration before the first mysql launch!
+- name: mysql configuration
+  template: src=optimization.cnf.j2 dest={{ mysql_etc_d }}/zz_00_optimization.cnf
+
 - name: Install MySQL
   apt: name={{ item }}
   with_items:
@@ -26,9 +33,6 @@
 
 - name: Update root user for all hosts
   mysql_user: host_all=yes user={{ mysql_data.user }} password={{ mysql_data.password }} update_password=always
-
-- name: mysql configuration
-  template: src=optimization.cnf.j2 dest={{ mysql_etc_d }}/zz_00_optimization.cnf
 
 - name: Backup script
   template: src=mysqlbackup.j2 dest=/usr/local/bin/mysqlbackup owner=root group=root mode=0755
