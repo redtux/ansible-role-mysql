@@ -5,12 +5,34 @@ BACKUPDATE="$(date +%F_+%T)"
 OUTPUTDIR="$BACKUPDIR/$BACKUPDATE"
 DELETEAFTER="{{ mysql_backup_delete_after }}"
 
+BZIP=$(which pbzip2 lbzip2 bzip2| head -n1)
+GZIP=$(which pigz gzip | head -n1)
+
+if [ ! -z "$BZIP" ]; then
+	COMPRESS="$BZIP"
+	COMPRESS_ENDING="bz2"
+else
+	COMPRESS="$GZIP"
+	COMPRESS_ENDING="gz"
+fi
 
 mkdir -p "$OUTPUTDIR"
 
+do_log() {
+	logger -p local7.notice -t BACKUP $@
+}
+
+do_log "Start MySQL Backup Dump to $OUTPUTDIR"
 while read database; do
-	mysqldump "$database" | pbzip2 -zc > "$OUTPUTDIR/${database}.sql.bz2"
-done< <(mysql -N -e "SELECT DISTINCT TABLE_SCHEMA FROM TABLES WHERE TABLE_SCHEMA NOT IN ('performance_schema', 'information_schema')" information_schema)
+	do_log "Backup MySQL Database $database"
+	mysqldump "$database" | $COMPRESS -zc > "$OUTPUTDIR/${database}.sql.$COMPRESS_ENDING"
+	if [ "$?" -ne 0 ]; then
+		do_log "mysqlump status code $?"
+	fi
+	do_log "Backup MySQL Datbase $database finished"
+done< <(mysql -N -e "SELECT DISTINCT TABLE_SCHEMA FROM TABLES WHERE TABLE_SCHEMA NOT IN ('performance_schema', 'information_schema', 'sys')" information_schema)
+do_log "Finished MySQL Backup"
 
+do_log "Cleanup old MySQL Backups"
 find "$BACKUPDIR" -mindepth 1 -maxdepth 1 -type d -mtime "+$DELETEAFTER" -exec rm -r {} \;
-
+do_log "Cleanup of old MySQL Backups finished"
