@@ -1,5 +1,14 @@
+- name: Test if /etc/mysql/mysql.conf.d
+  stat: path=/etc/mysql/mysql.conf.d
+  register: stat_mysqld_conf_d
+
 - name: Fact | MySQL etc dir
   set_fact: mysql_etc_d=/etc/mysql/conf.d
+  when: not stat_mysqld_conf_d.stat.exists
+
+- name: Fact | MySQL etc dir
+  set_fact: mysql_etc_d=/etc/mysql/mysql.conf.d
+  when: stat_mysqld_conf_d.stat.exists
 
 - name: Create configuration directory
   file: path={{ mysql_etc_d }} state=directory owner=root group=root mode=755
@@ -45,4 +54,3 @@
     job: /usr/local/bin/mysqlbackup
     minute: "{{ mysql_backup_minute }}"
     hour: "{{ mysql_backup_hour }}"
-
