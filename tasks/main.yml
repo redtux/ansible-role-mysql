@@ -1,14 +1,10 @@
-- name: Test if /etc/mysql/mysql.conf.d
-  stat: path=/etc/mysql/mysql.conf.d
-  register: stat_mysqld_conf_d
-
 - name: Fact | MySQL etc dir
   set_fact: mysql_etc_d=/etc/mysql/conf.d
-  when: not stat_mysqld_conf_d.stat.exists
+  when: mysql_optimization_version|int <= 5
 
 - name: Fact | MySQL etc dir
   set_fact: mysql_etc_d=/etc/mysql/mysql.conf.d
-  when: stat_mysqld_conf_d.stat.exists
+  when: mysql_optimization_version|int > 5
 
 - name: Create configuration directory
   file: path={{ mysql_etc_d }} state=directory owner=root group=root mode=755
