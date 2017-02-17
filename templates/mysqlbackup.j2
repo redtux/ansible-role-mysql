@@ -4,16 +4,28 @@ BACKUPDIR="{{ mysql_backup_directory }}"
 BACKUPDATE="$(date +%F_+%T)"
 OUTPUTDIR="$BACKUPDIR/$BACKUPDATE"
 DELETEAFTER="{{ mysql_backup_delete_after }}"
+COMPRESS=
 
 BZIP=$(which pbzip2 lbzip2 bzip2| head -n1)
 GZIP=$(which pigz gzip | head -n1)
+LZOP=$(which lzop | head -n1)
 
-if [ ! -z "$BZIP" ]; then
-	COMPRESS="$BZIP"
-	COMPRESS_ENDING="bz2"
-else
-	COMPRESS="$GZIP"
-	COMPRESS_ENDING="gz"
+[ -r "/etc/default/mysqlbackup" ] && . /etc/default/mysqlbackup
+
+if [ -z "$COMPRESS" ]; then
+	if [ ! -z "$BZIP" ]; then
+		COMPRESS="$BZIP"
+		COMPRESS_ENDING="bz2"
+		COMPRESS_PARAMS="-zc"
+	elif [ ! -z "$LZOP" ]; then
+		COMPRESS="$LZOP"
+		COMPRESS_ENDING="lzo"
+		COMPRESS_PARAMS="-c"
+	else
+		COMPRESS="$GZIP"
+		COMPRESS_ENDING="gz"
+		COMPRESS_PARAMS="-c"
+	fi
 fi
 
 mkdir -p "$OUTPUTDIR"
@@ -24,8 +36,16 @@ do_log() {
 
 do_log "Start MySQL Backup Dump to $OUTPUTDIR"
 while read database; do
+	mydump_params=
 	do_log "Backup MySQL Database $database"
-	mysqldump "$database" | $COMPRESS -zc > "$OUTPUTDIR/${database}.sql.$COMPRESS_ENDING"
+	if [ "x$database" == "xmysql" ]; then
+		mydump_params="$mydump_params --events --ignore-table=mysql.events"
+	fi
+	non_innodb_tables=$(mysql -N -e "SELECT COUNT(*) FROM TABLES WHERE TABLE_SCHEMA='$database' AND ENGINE != 'InnoDB'" information_schema)
+	if [ "x$non_innodb_tables" == "x0" ]; then
+		mydump_params="$mydump_params --quick --single-transaction"
+	fi
+	mysqldump $mydump_params "$database" | $COMPRESS $COMPRESS_PARAMS > "$OUTPUTDIR/${database}.sql.$COMPRESS_ENDING"
 	if [ "$?" -ne 0 ]; then
 		do_log "mysqlump status code $?"
 	fi

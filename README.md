@@ -9,3 +9,13 @@
 * mysql_backup_minute: Minute when the cron will be executed which will create the dump (default: 11)
 * mysql_backup_hour: Hour when the cron will be executed which will create the dump (default: 3)
 * mysql_optimization_version: Choose 5 for mysql 5.5 or 6 for mysql 5.6 (default: 5)
+
+#### Special notes on mysqlbackup
+
+You can specify custom compression arguments for sql files by creating a /etc/default/mysqlbackup file and overwriting the parameters:
+
+```bash
+COMPRESS="/PATH/TO/COMPRESSION/PROGRAM"
+COMPRESS_ENDING="FILEENDING"
+COMPRESS_PARAMS="-PARAMETERS -FOR -COMPRESSION -PROGRAM"
+```
