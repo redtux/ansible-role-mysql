@@ -1,10 +1,10 @@
 - name: Fact | MySQL etc dir
   set_fact: mysql_etc_d=/etc/mysql/conf.d
-  when: mysql_optimization_version|int <= 5
+  when: (mysql_optimization_version|int <= 5) or (mysql_optimization_version|int >= 6 and ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int <= 14)
 
 - name: Fact | MySQL etc dir
   set_fact: mysql_etc_d=/etc/mysql/mysql.conf.d
-  when: mysql_optimization_version|int > 5
+  when: not mysql_etc_d is defined and mysql_optimization_version|int > 5
 
 - name: Create configuration directory
   file: path={{ mysql_etc_d }} state=directory owner=root group=root mode=755
