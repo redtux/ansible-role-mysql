@@ -1,10 +1,5 @@
-- name: Fact | MySQL etc dir
-  set_fact: mysql_etc_d=/etc/mysql/conf.d
-  when: (mysql_optimization_version|int <= 5) or (mysql_optimization_version|int >= 6 and ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int <= 14)
-
-- name: Fact | MySQL etc dir
-  set_fact: mysql_etc_d=/etc/mysql/mysql.conf.d
-  when: not mysql_etc_d is defined and mysql_optimization_version|int > 5
+- include: facts.yml
+  static: no
 
 - name: Create configuration directory
   file: path={{ mysql_etc_d }} state=directory owner=root group=root mode=755
@@ -13,12 +8,8 @@
 - name: mysql configuration
   template: src=optimization.cnf.j2 dest={{ mysql_etc_d }}/zz_00_optimization.cnf
 
-- name: Install MySQL
-  apt: name={{ item }}
-  with_items:
-    - "{{ mysql_server_package_debian }}"
-    - "{{ mysql_client_package_debian }}"
-    - python-mysqldb
+- include: "{{ mysql_type }}-apt.yml"
+  static: no
   when: ansible_pkg_mgr == "apt"
 
 - name: Fetch root password

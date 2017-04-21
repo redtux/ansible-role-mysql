@@ -1,0 +1,6 @@
+- name: Installation
+  apt: name={{ item }}
+  with_items:
+    - mysql-server
+    - mysql-client
+    - python-mysqldb

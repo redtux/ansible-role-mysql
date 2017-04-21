@@ -1,0 +1,16 @@
+- name: MySQL Repository Key
+  apt_key:
+    keyserver: pgp.mit.edu
+    id: 5072E1F5
+
+- name: MySQL Repository
+  apt_repository:
+    repo: "deb http://repo.mysql.com/apt/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} mysql-5.7"
+    filename: mysql_vendor
+
+- name: Installation
+  apt: name="{{ item }}"
+  with_items:
+    - mysql-server
+    - mysql-client
+    - python-mysqldb

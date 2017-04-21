@@ -1,7 +1,6 @@
-mysql_server_package_debian: mysql-server
-mysql_client_package_debian: mysql-client
 mysql_backup_directory: /var/backups/db-dump
 mysql_backup_delete_after: "7"
 mysql_backup_minute: "11"
 mysql_backup_hour: "3"
 mysql_optimization_version: 5
+mysql_type: system

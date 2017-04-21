@@ -1,0 +1,19 @@
+- name: MySQL Repository Key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: "{{ item }}"
+  with_items:
+    - "0xF1656F24C74CD1D8"
+    - "0xcbcb082a1bb943db"
+
+- name: MySQL Repository
+  apt_repository:
+    repo: "deb [arch=amd64,i386] http://ftp.hosteurope.de/mirror/mariadb.org/repo/10.1/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} main"
+    filename: mariadb
+
+- name: Installation
+  apt: name="{{ item }}"
+  with_items:
+    - mariadb-server
+    - mariadb-client
+    - python-mysqldb
