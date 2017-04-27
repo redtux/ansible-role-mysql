@@ -17,3 +17,19 @@ COMPRESS="/PATH/TO/COMPRESSION/PROGRAM"
 COMPRESS_ENDING="FILEENDING"
 COMPRESS_PARAMS="-PARAMETERS -FOR -COMPRESSION -PROGRAM"
 ```
+
+#### Known errors
+
+If you are getting the following error message
+```
+{"changed": false, "failed": true, "msg": "(-1, 'error totally whack')"}
+```
+
+mysql/mariadb most likely didn't update it's table schema for the mysql database.
+
+To fix this try:
+```bash
+mysql_upgrade
+service mysql restart
+```
+
